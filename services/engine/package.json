@@ -1,0 +1,13 @@
+{
+  "name": "engine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "@repo/types": "workspace:*",
+    "bullmq": "^5.61.2",
+    "uuid": "^13.0.0"
+  }
+}

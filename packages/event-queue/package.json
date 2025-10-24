@@ -1,0 +1,19 @@
+{
+  "name": "event-queue",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "npx tsc && node ./dist/index.js",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "bullmq": "^5.61.0",
+    "dotenv": "^17.2.3",
+    "dotenv-flow": "^4.1.0",
+    "redis": "^5.8.3"
+  }
+}
