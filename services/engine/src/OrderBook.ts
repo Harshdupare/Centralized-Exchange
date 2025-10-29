@@ -56,11 +56,15 @@ export class OrderBook {
         let fills : Fill[] = [];
 
         for(let i = 0 ; i < this.asks.length ; i++){
+            // check for same user
             if(this.asks[i].userId === order.userId){
                 continue;
             }
+            // check if listed price is greater than or equal to order entryprice and executedQty is less than order qty
             if(this.asks[i].entryprice >= order.entryprice && executedQty < order.quantity){
-                const trade = Math.min(this.asks[i].entryprice , order.entryprice - executedQty);
+                // take min of listed qty and diff. of order qty and executed qty
+                // so that only remaining qty should be executed 
+                const trade = Math.min(this.asks[i].quantity , order.quantity - executedQty);
                 executedQty += trade;
 
                 if(this.asks[i]){
@@ -82,6 +86,7 @@ export class OrderBook {
                 })
             }
         }
+        // if order is filled and completely executed remove from the list
         this.asks = this.asks.filter((ask) => ask.filled < ask.quantity)
 
         return {executedQty , fills};
@@ -97,7 +102,7 @@ export class OrderBook {
             }
 
             if(this.bids[i].entryprice >= order.entryprice && executedQty < order.quantity){
-                let trade = Math.min(this.bids[i].entryprice, order.quantity - executedQty);
+                let trade = Math.min(this.bids[i].quantity, order.quantity - executedQty);
                 executedQty += trade;
 
                 if(this.bids[i]){
@@ -138,19 +143,61 @@ export class OrderBook {
     }
     
 
-    // TODO : 
+    //  
     getMarketDepth(){
+        const bidDepth = this.aggregatedByPrice(this.bids, true);
+        const askDepth = this.aggregatedByPrice(this.asks, false);
 
+        return {
+            bid : bidDepth,
+            ask : askDepth
+        }
     }
-    aggregatedByPrice(){
 
+    aggregatedByPrice(orders : Order[] , descending : boolean){
+        let priceMap = new Map();
+
+        orders.forEach((e) => {
+            if(e.quantity > 0){
+                priceMap.set(e.entryprice , (priceMap.get(e.entryprice) || 0) + e.quantity);
+            }
+        })
+        const entries = Array.from(priceMap.entries())
+
+        return entries.sort((a, b) => descending ? b[0] - a[0] : a[0] - b[0]);
     }
 
-    getOpenOrders(){
+    getOpenOrders(userId : string){
+        const bids = this.bids.filter((bid) => bid.userId === userId);
+        const asks = this.asks.filter((ask) => ask.userId === userId);
 
+        return [...bids , ...asks];
     }
 
-    getBestOppositePrice(){
 
+    // the best price that will be needed to fill the entire quantity per (share/qty)
+    getBestOppositePrice(side : orderSide, qauntity : number){
+        let bestprice;
+        let fillQuantity = 0;
+
+        if(side === "LONG"){
+            for(let i = 0 ; i < this.asks.length ; i++){
+                fillQuantity += this.asks[i].quantity;
+                if(fillQuantity >= qauntity){
+                    bestprice = this.asks[i].entryprice;
+                    break;
+                }
+            }    
+        }else{    
+            for(let i = 0 ; i < this.bids.length ; i++){
+                fillQuantity += this.bids[i].quantity;
+                if(fillQuantity >= qauntity){
+                    bestprice = this.bids[i].entryprice;
+                    break;
+                }
+            }
+        }    
+
+        return bestprice;   
     }
 }
