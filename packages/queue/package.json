@@ -1,6 +1,9 @@
 {
-  "name": "queue",
+  "name": "@repo/queue",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "exports": {
+    ".": "./dist/index.js"
+  }
 }

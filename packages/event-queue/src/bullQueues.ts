@@ -24,7 +24,7 @@ export const liquidationQueue = new Queue('LIQUIDATION-QUEUE', {
     }
 })
 
-export const funcdingQueue = new Queue('FUNDING-QUEUE',{
+export const fundingQueue = new Queue('FUNDING-QUEUE',{
     connection : {
         host : process.env.REDIS_HOST,
         port : Number(process.env.REDIS_PORT),

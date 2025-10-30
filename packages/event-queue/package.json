@@ -1,5 +1,5 @@
 {
-  "name": "event-queue",
+  "name": "@repo/event-queue",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

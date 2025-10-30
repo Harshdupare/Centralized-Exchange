@@ -143,7 +143,7 @@ export class OrderBook {
     }
     
 
-    //  
+    // get the volume of (people trying to buy or sell) at each price 
     getMarketDepth(){
         const bidDepth = this.aggregatedByPrice(this.bids, true);
         const askDepth = this.aggregatedByPrice(this.asks, false);
@@ -167,6 +167,7 @@ export class OrderBook {
         return entries.sort((a, b) => descending ? b[0] - a[0] : a[0] - b[0]);
     }
 
+    // get the orders that are currently sitting on the order book waiting to get executed
     getOpenOrders(userId : string){
         const bids = this.bids.filter((bid) => bid.userId === userId);
         const asks = this.asks.filter((ask) => ask.userId === userId);
