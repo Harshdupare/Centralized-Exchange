@@ -1,5 +1,4 @@
 import {S3Client , PutObjectCommand , GetObjectCommand} from "@aws-sdk/client-s3";
-import { promises } from "dns";
 import { Readable } from "stream";
 
 const s3 = new S3Client({
@@ -13,7 +12,7 @@ const s3 = new S3Client({
 
 
 export const s3manager = {
-    async uploadSnapShot(snapshot : object , key : string){
+    async uploadSnapshot(snapshot : object , key : string){
         const bucket = "process.env.bucket_name";
         const body = JSON.stringify(snapshot);
         const command = new PutObjectCommand({
@@ -25,7 +24,7 @@ export const s3manager = {
         await s3.send(command);
     },
 
-    async downloadSnapShot(key : string): Promise<string> {
+    async downloadSnapshot(key : string): Promise<any> {
         const bucket = "bucket_name";
         try{
             const command = new GetObjectCommand({

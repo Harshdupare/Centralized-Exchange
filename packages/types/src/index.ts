@@ -4,7 +4,7 @@ export type orderSide = "LONG" | "SHORT" | "UNINITIALIZED";
 export interface Order {
     id          : string,
     userId      : string,
-    market      : "BTCUSDT",
+    market?      : "BTCUSDT",
     entryprice  : number,
     quantity    : number,
     type        : orderType,
@@ -16,7 +16,7 @@ export interface Order {
 export interface MarketOrder {
     id          : string,
     userId      : string,
-    market      : "BTCUSDT",
+    market?      : "BTCUSDT",
     quantity    : number,
     type        : orderType,
     side        : orderSide,
@@ -32,7 +32,7 @@ export interface UserPosition {
     margin              : number,
     unrealizedpnl       : number,
     liquidationPrice    : number,
-    leverage            : number
+    leverage?            : number
 }
 
 export interface UserBalance {
@@ -48,5 +48,5 @@ export interface Fill {
     otherUserId     : String,
     price           : number,
     quantity        : number,
-    side            : orderSide
+    side?            : orderSide
 }
