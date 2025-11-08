@@ -28,7 +28,7 @@ export class RedisManager{
         return this.instance;
     }
 
-    public async publishToChannel(channel: string, message : string){
+    public async publishToChannel(channel: string, message : any){
         await this.client.publish(channel, message);
     }
 

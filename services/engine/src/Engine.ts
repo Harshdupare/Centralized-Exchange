@@ -170,10 +170,69 @@ export class Engine{
             const {executedQty , fills} = this.orderBook.addOrder(order);
 
             this.updateuserPnl(fills, executedQty , order);
+            this.updateuserPosition(fills , executedQty, order);
+            this.publishUserBalance(order.userId);
+            this.publishDepth();
+            this.publishLastTrade(fills);
+            this.updateRedisBalance(order.userId);
+            this.updateRedisDepth();
+            this.updateRedisOrder({ ...order , filled : executedQty});
+            this.updateRedisFills(fills , order);
+            this.updateUserPosition(fills , order);
+            console.log(executedQty, order);
         }catch(error){
             throw new Error(error);
         }
         
+    }
+
+    createMarketOrder(
+        userId : string,
+        quantity : number,
+        side : orderSide,
+        leverage : number,
+        type : orderType
+    ){
+
+        try{
+
+            const referencePrice = this.orderBook.getBestOppositePrice(side , quantity);
+            
+            if(!referencePrice){
+                throw new Error("No reference price were found");
+            }
+            this.checkAndLockVBalance(userId, side , referencePrice , quantity , leverage);
+            
+            const orderId = uuidv4();
+            
+            const order = {
+                id : orderId,
+                userId,
+                entryprice : referencePrice,
+                quantity,
+                type,
+                side,
+                leverage,
+                filled : 0,
+            }
+            
+            const {executedQty , fills} = this.orderBook.addOrder(order);
+
+            this.updateuserPnl(fills, executedQty , order);
+            this.updateuserPosition(fills , executedQty, order);
+            this.publishUserBalance(order.userId);
+            this.publishDepth();
+            this.publishLastTrade(fills);
+            this.updateRedisBalance(order.userId);
+            this.updateRedisDepth();
+            this.updateRedisOrder({ ...order , filled : executedQty});
+            this.updateRedisFills(fills , order);
+            this.updateUserPosition(fills , order);
+            console.log(executedQty, order);
+        }catch(error){
+            throw new Error("Failed to create market order : " , error);
+        }
+            
     }
 
     ensureUser(userId : string){
@@ -333,7 +392,7 @@ export class Engine{
                     position.entryprice = (oldNotional + newNotional)/totalQty; 
 
                     const newMargin = (order.entryprice*executedQty)/order.leverage;
-                    position.margin = newMargin;
+                    position.margin = position.margin + newMargin;
                 }else {
 
                     if(position.quantity < executedQty){
@@ -376,7 +435,7 @@ export class Engine{
                     position.entryprice = (oldNotional + newNotional)/ totalQty;
 
                     const newMargin = (order.entryprice * executedQty)/order.leverage;
-                    position.margin = newMargin;
+                    position.margin = position.margin + newMargin;
                 }else{
 
                     if(position.quantity < executedQty){
@@ -423,12 +482,218 @@ export class Engine{
 
 
         fills.forEach((fill) => {
-            
+            const position = this.userPosition.get(fill.otherUserId);
+
+            switch(position.side){
+                case "LONG": {
+                    if(order.side === "SHORT"){
+                        const oldNotional = position.entryprice * position.quantity;
+                        const newNotional = fill.price * fill.quantity;
+                        const totalQty = position.quantity + fill.quantity;
+
+                        position.quantity += fill.quantity;
+                        position.entryprice = (oldNotional + newNotional) / totalQty;
+
+                        const newMargin = (fill.price * fill.quantity)/order.leverage;
+                        position.margin = position.margin + newMargin;
+                    }else{
+                        if(position.quantity > fill.quantity){
+                            const oldNotional = position.entryprice * position.quantity;
+                            const newNotional = fill.price * fill.quantity;
+                            const totalQty = position.quantity + fill.quantity;
+
+                            position.quantity -= fill.quantity;
+                            position.entryprice = (oldNotional - newNotional)/totalQty;
+
+                            const newMargin = (fill.price * fill.quantity)/order.leverage;
+                            position.margin = position.margin - newMargin;
+
+                        }else if(position.quantity === fill.quantity){
+                            position.side = "UNINITIALIZED";
+                            position.quantity = 0;
+                            position.entryprice = 0;
+                            position.margin = 0;
+                        }
+
+                    }
+                    break;
+                }
+                case "SHORT" : {
+                    if(order.side === "LONG"){
+                        const oldNotional = position.entryprice * position.quantity;
+                        const newNotional = fill.price * fill.quantity;
+                        const totalQty = position.quantity + fill.quantity;
+
+                        position.quantity += fill.quantity;
+                        position.entryprice = (oldNotional + newNotional) / totalQty;
+
+                        const newMargin = (fill.price * fill.quantity)/order.leverage;
+                        position.margin = position.margin + newMargin;
+                    }else{
+                        if(position.quantity > fill.quantity){
+                            const oldNotional = position.entryprice * position.quantity;
+                            const newNotional = fill.price * fill.quantity;
+                            const totalQty = position.quantity + fill.quantity;
+
+                            position.quantity -= fill.quantity;
+                            position.entryprice = (oldNotional - newNotional)/totalQty;
+
+                            const newMargin = (fill.price * fill.quantity)/order.leverage;
+                            position.margin = position.margin - newMargin;
+
+                        }else if(position.quantity === fill.quantity){
+                            position.side = "UNINITIALIZED";
+                            position.quantity = 0;
+                            position.entryprice = 0;
+                            position.margin = 0;
+                        }
+
+                    }
+                    break;
+                }
+                default : {
+                    position.side = order.side === "LONG" ? "SHORT" : "LONG";
+                    position.quantity = fill.quantity;
+                    position.entryprice = fill.price;
+                    position.margin = (fill.price * fill.quantity)/order.leverage;
+                    break;
+                }
+            }
+        })
+    }
+
+    publishUserBalance(userId : string){
+        const balance = this.userBalance.get(userId);
+
+        RedisManager.getInstance().publishToChannel(`balance@${userId}` , {
+            data : {
+                a : balance.availableBalance,
+                l : balance.lockedBalance
+            }
+        })
+    }
+
+    publishLastTrade(fills : Fill[]){
+        const lastFill = fills[fills.length -1];
+        RedisManager.getInstance().publishToChannel(`trade:update`, {
+            data : {
+                p : lastFill.price,
+                q : lastFill.quantity
+            }
+        })
+    }
+
+    publishDepth(){
+        const {asks ,bids} = this.orderBook.getMarketDepth();
+
+        RedisManager.getInstance().publishToChannel(`depth:update`, {
+            data : {
+                a : asks,
+                b : bids 
+            }
+        })
+    }
+
+    updateRedisBalance(userId : string){
+        const balance = this.userBalance.get(userId);
+        eventQueue.add("update_balance", {
+            type : "BALANCE_UPDATE", 
+            data : {
+                userId,
+                balance : balance.availableBalance
+            }
+        })
+    }
+
+    updateRedisDepth(){
+        const {asks, bids} = this.orderBook.getMarketDepth();
+        eventQueue.add("update_depth", {
+            type : "DEPTH_UPDATE",
+            data : {
+                asks,
+                bids
+            }
+        })
+    }
+
+    updateRedisOrder(order : Order){
+        eventQueue.add("updatd_order" , {
+            type : "ORDER_UPDATE",
+            data : order
+        })
+    }
+
+    updateRedisFills(fills : Fill[], order : Order){
+        fills.forEach((fill) =>{
+            eventQueue.add("update_fills", {
+                type : "FILL_UPDATE",
+                data : {
+                    ...fill,
+                    side : order.side
+                }
+            })
+        })
+    }
+
+    updateUserPosition(fills : Fill[], order : Order){
+        const position = this.userPosition.get(order.userId);
+        eventQueue.add("update_position", {
+            type : "POSITION_UPDATE",
+            data : {
+                ...position,
+                userId : order.userId
+            }
+        })
+
+        fills.forEach((fill) =>{
+            const position = this.userPosition.get(fill.otherUserId);
+            eventQueue.add("update_fills", {
+                type : "POSITION_UPDATE",
+                data : {
+                    ...position,
+                    userId : fill.otherUserId
+                }
+            })
+        })
+
+    }
+    
+    updateTopOfBook(){
+        const {asks , bids} = this.orderBook.getMarketDepth();
+        RedisManager.getInstance().publishToChannel(`topOfBook:update`, {
+            data : {
+                a : asks[0],
+                b : bids[0]
+            }
+        })
+    }
+
+    positionUpdateForLiquidation(){
+        const payload = Array.from(this.userPosition.entries()).map(([userId , position]) => (
+            {userId , ...position, leverage : position.leverage}
+        ))
+
+        RedisManager.getInstance().publishToChannel(`position:update`, {
+            data : payload
+        })
+        
+    }
+
+    cancleRedisOrder(order : Order){
+        eventQueue.add("cancel_order", {
+            type : "CANCEL_ORDER",
+            data : {
+                orderId: order.id
+            }
+        })
+    }
+
+    publishOrderCancelled(order : Order){
+        RedisManager.getInstance().publishToChannel(`order:cancelled` , {
+            data : {
+                orderId : order.id
+            }
         })
     }
 
 }
-
-
-
-

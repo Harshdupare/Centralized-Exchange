@@ -29,15 +29,15 @@ export interface UserPosition {
     side                : orderSide,
     quantity            : number,
     entryprice          : number,
-    margin              : number,
+    margin              : number,  // capital used in trade
     unrealizedpnl       : number,
     liquidationPrice    : number,
     leverage?            : number
 }
 
 export interface UserBalance {
-    availableBalance : number,
-    lockedBalance    : number
+    availableBalance : number,  // this is available balance for used for trade
+    lockedBalance    : number  // this is the collateral against leevrage
 }
 
 export interface Fill {

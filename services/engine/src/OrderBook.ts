@@ -149,8 +149,8 @@ export class OrderBook {
         const askDepth = this.aggregatedByPrice(this.asks, false);
 
         return {
-            bid : bidDepth,
-            ask : askDepth
+            bids : bidDepth,
+            asks : askDepth
         }
     }
 
