@@ -3,12 +3,10 @@ import { OrderBook } from "./OrderBook.js";
 import { UserBalance , UserPosition, Order, orderSide, orderType ,Fill } from "@repo/types";
 import { eventQueue , RedisManager } from "@repo/event-queue";
 import { Worker } from "bullmq";
+import {v4 as uuidv4} from "uuid";
+
 import dotenvFlow from "dotenv-flow";
-import{v4 as uuidv4} from "uuid";
-
 import path from "path";
-import { markAsUncloneable } from "worker_threads";
-
 
 
 dotenvFlow.config({
@@ -18,8 +16,8 @@ dotenvFlow.config({
 const ENGINE_KEY = "process.env.ENGINE_KEY";
 
 export class Engine{
-    public static instance : Engine; 
-    private orderBook : OrderBook;
+    public static instance : Engine | null; 
+    private orderBook : OrderBook | null;
     private userPosition : Map<String, UserPosition> = new Map();
     private userBalance :Map<String , UserBalance> = new Map();
 
@@ -46,7 +44,7 @@ export class Engine{
             }
         }, {
             connection : {
-                port : parseInt(process.env.REDIS_PORT),
+                port : parseInt(process.env.REDIS_PORT as string),
                 host : process.env.REDIS_HOSTS
             }
         })
@@ -128,12 +126,80 @@ export class Engine{
                         order.quantity,
                         order.leverage,
                         order.type
-                    )
+                    );
                 }catch(error){
                     console.log("Failed to create Limit order : ", error);
                 }
+
+                break;
+
+            }
+            case "MARKET-CREATE" : {
+                try{
+                    this.createMarketOrder(
+                        order.userId,
+                        order.quantity,
+                        order.side,
+                        order.leverage,
+                        order.type 
+                    );
+                }catch(error){
+                    console.log("Failed to create market order : " , error);
+                }
+
+                break;
+
+            }
+            case "MARKET-LIQUIDATION" : {
+                try{
+                    this.createMarketOrder(
+                        order.userId,
+                        order.quantity,
+                        order.side,
+                        order.leverage,
+                        order.type 
+                    );
+                }catch(error){
+                    console.log("Failed to create market order : " , error);
+                }
+
+                break;
+            
+            }
+            case "LIMIT-CANCEL" : {
+                try{
+                    this.orderBook?.cancelOrder(order.id, order.userId);
+
+                    const reaminingQty = order.quantity - order.filled;
+                    const balance = this.userBalance.get(order.userId);
+
+                    if(balance){
+                        balance.availableBalance += reaminingQty*order.entryprice / order.leverage;
+                        balance.lockedBalance -= reaminingQty*order.entryprice / order.leverage;
+                    }
+
+                    this.publishUserBalance(order.userId);
+                    this.publishOrderCancelled(order);
+                    this.updateRedisBalance(order.userId);
+                    this.updateRedisDepth();
+                    this.cancleRedisOrder(order);
+
+                    console.log("Order Cancelled");
+
+                }catch(error){
+                    console.log("Failed to cancel order : " , error);
+                }
+
+                break;
+
             }
         }
+
+        this.updateTopOfBook();
+        this.positionUpdateForLiquidation();
+
+        console.log("order is processed");
+
     }
     
     createOrder(
@@ -146,7 +212,7 @@ export class Engine{
     ){  
         try{
             this.ensureUser(userId);
-            this.checkAndLockVBalance(
+            this.checkAndLockBalance(
                 userId,
                 side,
                 entryprice,
@@ -167,7 +233,7 @@ export class Engine{
                 filled : 0,
             }
 
-            const {executedQty , fills} = this.orderBook.addOrder(order);
+            const {executedQty , fills} = this.orderBook?.addOrder(order)!;
 
             this.updateuserPnl(fills, executedQty , order);
             this.updateuserPosition(fills , executedQty, order);
@@ -181,7 +247,7 @@ export class Engine{
             this.updateUserPosition(fills , order);
             console.log(executedQty, order);
         }catch(error){
-            throw new Error(error);
+            throw new Error("Failed to Create limit order");
         }
         
     }
@@ -196,12 +262,12 @@ export class Engine{
 
         try{
 
-            const referencePrice = this.orderBook.getBestOppositePrice(side , quantity);
+            const referencePrice = this.orderBook?.getBestOppositePrice(side , quantity);
             
             if(!referencePrice){
                 throw new Error("No reference price were found");
             }
-            this.checkAndLockVBalance(userId, side , referencePrice , quantity , leverage);
+            this.checkAndLockBalance(userId, side , referencePrice , quantity , leverage);
             
             const orderId = uuidv4();
             
@@ -216,7 +282,7 @@ export class Engine{
                 filled : 0,
             }
             
-            const {executedQty , fills} = this.orderBook.addOrder(order);
+            const {executedQty , fills} = this.orderBook?.addOrder(order)!;
 
             this.updateuserPnl(fills, executedQty , order);
             this.updateuserPosition(fills , executedQty, order);
@@ -230,7 +296,7 @@ export class Engine{
             this.updateUserPosition(fills , order);
             console.log(executedQty, order);
         }catch(error){
-            throw new Error("Failed to create market order : " , error);
+            throw new Error("Failed to create market order ");
         }
             
     }
@@ -256,15 +322,15 @@ export class Engine{
         }
     }
 
-    checkAndLockVBalance(
+    checkAndLockBalance(
         userId : string,
         side : orderSide,
         entryprice : number,
         quantity : number,
         leverage :number
     ){
-        const position = this.userPosition.get(userId);
-        const balance = this.userBalance.get(userId);
+        const position = this.userPosition.get(userId)!;
+        const balance = this.userBalance.get(userId)!;
 
         if(side === "LONG"){
             switch(position.side){
@@ -347,8 +413,8 @@ export class Engine{
         executedQty : number,
         order : Order
     ){
-        const position = this.userPosition.get(order.userId);
-        const balance = this.userBalance.get(order.userId);
+        const position = this.userPosition.get(order.userId)!;
+        const balance = this.userBalance.get(order.userId)!;
 
         if(!fills.length) return; 
 
@@ -367,8 +433,8 @@ export class Engine{
             totalClosedQty += closedQty;
         })
         
-        balance.availableBalance += (position.entryprice/position.leverage)*totalClosedQty + totalPnl;
-        balance.lockedBalance -= (position.entryprice/position.leverage)*totalClosedQty;
+        balance.availableBalance += (position.entryprice/order.leverage)*totalClosedQty + totalPnl;
+        balance.lockedBalance -= (position.entryprice/order.leverage)*totalClosedQty;
 
     }
 
@@ -377,7 +443,7 @@ export class Engine{
         executedQty : number,
         order : Order
     ){
-        const position = this.userPosition.get(order.side);
+        const position = this.userPosition.get(order.side)!;
 
         switch(position.side){
             case "LONG" :{
@@ -482,7 +548,7 @@ export class Engine{
 
 
         fills.forEach((fill) => {
-            const position = this.userPosition.get(fill.otherUserId);
+            const position = this.userPosition.get(fill.otherUserId)!;
 
             switch(position.side){
                 case "LONG": {
@@ -563,7 +629,7 @@ export class Engine{
     }
 
     publishUserBalance(userId : string){
-        const balance = this.userBalance.get(userId);
+        const balance = this.userBalance.get(userId)!;
 
         RedisManager.getInstance().publishToChannel(`balance@${userId}` , {
             data : {
@@ -574,7 +640,7 @@ export class Engine{
     }
 
     publishLastTrade(fills : Fill[]){
-        const lastFill = fills[fills.length -1];
+        const lastFill = fills[fills.length -1]!;
         RedisManager.getInstance().publishToChannel(`trade:update`, {
             data : {
                 p : lastFill.price,
@@ -584,7 +650,7 @@ export class Engine{
     }
 
     publishDepth(){
-        const {asks ,bids} = this.orderBook.getMarketDepth();
+        const {asks ,bids} = this.orderBook?.getMarketDepth()!;
 
         RedisManager.getInstance().publishToChannel(`depth:update`, {
             data : {
@@ -595,7 +661,7 @@ export class Engine{
     }
 
     updateRedisBalance(userId : string){
-        const balance = this.userBalance.get(userId);
+        const balance = this.userBalance.get(userId)!;
         eventQueue.add("update_balance", {
             type : "BALANCE_UPDATE", 
             data : {
@@ -606,7 +672,7 @@ export class Engine{
     }
 
     updateRedisDepth(){
-        const {asks, bids} = this.orderBook.getMarketDepth();
+        const {asks, bids} = this.orderBook?.getMarketDepth()!;
         eventQueue.add("update_depth", {
             type : "DEPTH_UPDATE",
             data : {
@@ -659,7 +725,7 @@ export class Engine{
     }
     
     updateTopOfBook(){
-        const {asks , bids} = this.orderBook.getMarketDepth();
+        const {asks , bids} = this.orderBook?.getMarketDepth()!;
         RedisManager.getInstance().publishToChannel(`topOfBook:update`, {
             data : {
                 a : asks[0],

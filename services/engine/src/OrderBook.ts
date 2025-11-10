@@ -7,8 +7,8 @@ export class OrderBook {
     market  : string;
     
     constructor(
-        asks : [],
-        bids : [],
+        asks : Order[],
+        bids : Order[],
         market : "BTCUSDT"
     ){
         this.asks = asks;
@@ -57,29 +57,29 @@ export class OrderBook {
 
         for(let i = 0 ; i < this.asks.length ; i++){
             // check for same user
-            if(this.asks[i].userId === order.userId){
+            if(this.asks[i]?.userId === order.userId){
                 continue;
             }
             // check if listed price is greater than or equal to order entryprice and executedQty is less than order qty
-            if(this.asks[i].entryprice >= order.entryprice && executedQty < order.quantity){
+            if(this.asks[i]?.entryprice! >= order.entryprice && executedQty < order.quantity){
                 // take min of listed qty and diff. of order qty and executed qty
                 // so that only remaining qty should be executed 
-                const trade = Math.min(this.asks[i].quantity , order.quantity - executedQty);
+                const trade = Math.min(this.asks[i]?.quantity! , order.quantity - executedQty);
                 executedQty += trade;
 
                 if(this.asks[i]){
-                    if(this.asks[i].filled === undefined){
-                        this.asks[i].filled = 0;
+                    if(this.asks[i]!.filled === undefined){
+                        this.asks[i]!.filled = 0;
                     }
-                    this.asks[i].filled += trade;
+                    this.asks[i]!.filled += trade;
                 }
 
                 fills.push({
                     fillId : uuidv4(),
                     orderId : order.id,
-                    otherOrderId : this.asks[i].id,
+                    otherOrderId : this.asks[i]!.id,
                     userId : order.userId,
-                    otherUserId : this.asks[i].userId,
+                    otherUserId : this.asks[i]!.userId,
                     price : order.entryprice,
                     quantity : trade,
                     side : order.side
@@ -97,27 +97,27 @@ export class OrderBook {
         let fills : Fill[] = [];
         
         for(let i = 0 ; i < this.bids.length ; i++){
-            if(this.bids[i].userId === order.userId){
+            if(this.bids[i]!.userId === order.userId){
                 continue;
             }
 
-            if(this.bids[i].entryprice >= order.entryprice && executedQty < order.quantity){
-                let trade = Math.min(this.bids[i].quantity, order.quantity - executedQty);
+            if(this.bids[i]!.entryprice >= order.entryprice && executedQty < order.quantity){
+                let trade = Math.min(this.bids[i]!.quantity, order.quantity - executedQty);
                 executedQty += trade;
 
                 if(this.bids[i]){
-                    if(this.bids[i].filled === undefined){
-                        this.bids[i].filled = 0;
+                    if(this.bids[i]!.filled === undefined){
+                        this.bids[i]!.filled = 0;
                     }
-                    this.bids[i].filled += trade;
+                    this.bids[i]!.filled += trade;
                 }
 
                 fills.push({
                     fillId : uuidv4(),
                     orderId : order.id,
-                    otherOrderId : this.bids[i].id,
+                    otherOrderId : this.bids[i]!.id,
                     userId : order.id,
-                    otherUserId : this.bids[i].userId,
+                    otherUserId : this.bids[i]!.userId,
                     price : order.entryprice,
                     quantity : trade ,
                     side : order.side
@@ -183,17 +183,17 @@ export class OrderBook {
 
         if(side === "LONG"){
             for(let i = 0 ; i < this.asks.length ; i++){
-                fillQuantity += this.asks[i].quantity;
+                fillQuantity += this.asks[i]!.quantity;
                 if(fillQuantity >= qauntity){
-                    bestprice = this.asks[i].entryprice;
+                    bestprice = this.asks[i]!.entryprice;
                     break;
                 }
             }    
         }else{    
             for(let i = 0 ; i < this.bids.length ; i++){
-                fillQuantity += this.bids[i].quantity;
+                fillQuantity += this.bids[i]!.quantity;
                 if(fillQuantity >= qauntity){
-                    bestprice = this.bids[i].entryprice;
+                    bestprice = this.bids[i]!.entryprice;
                     break;
                 }
             }

@@ -3,6 +3,9 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "rootDir": "./src",
-    "outDir": "./dist"
-  }
+    "outDir": "./dist",
+    "composite": true,
+    "incremental": true
+  },
+  "include": ["./src/**/*.ts"]
 }

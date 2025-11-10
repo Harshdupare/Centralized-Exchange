@@ -1,6 +1,7 @@
 import {S3Client , PutObjectCommand , GetObjectCommand} from "@aws-sdk/client-s3";
 import { Readable } from "stream";
 
+// TODO : Setup s3 system
 const s3 = new S3Client({
     region : "process.env.region",
     endpoint : "process.env.region",

@@ -1274,12 +1274,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/bloom@npm:5.9.0":
+  version: 5.9.0
+  resolution: "@redis/bloom@npm:5.9.0"
+  peerDependencies:
+    "@redis/client": ^5.9.0
+  checksum: 10c0/4259d3763854f745b43e768792135e3322b57e6c5887931d2723de6171c8e91448402521dec95b7f66449a545cd7adf50330492c914e7d098ce7c587ddcefe19
+  languageName: node
+  linkType: hard
+
 "@redis/client@npm:5.8.3":
   version: 5.8.3
   resolution: "@redis/client@npm:5.8.3"
   dependencies:
     cluster-key-slot: "npm:1.1.2"
   checksum: 10c0/af34e1373fd853d6034ba69add08611c1fe19cf1e1e28f35d4eb1c570e4d11cae9a1b7869739f7593e5ba701f3f13edde64654691f075d74b04a131983347b35
+  languageName: node
+  linkType: hard
+
+"@redis/client@npm:5.9.0":
+  version: 5.9.0
+  resolution: "@redis/client@npm:5.9.0"
+  dependencies:
+    cluster-key-slot: "npm:1.1.2"
+  checksum: 10c0/f4963fc78ff11ead264321dac8a99e34373048537ffbdf29eb6a04c93a147e0778c832b6d396ba86d4339e6fd36668bb255744ba29113393328d3945b095190f
   languageName: node
   linkType: hard
 
@@ -1292,6 +1310,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/json@npm:5.9.0":
+  version: 5.9.0
+  resolution: "@redis/json@npm:5.9.0"
+  peerDependencies:
+    "@redis/client": ^5.9.0
+  checksum: 10c0/ae292048b9259f640de149e4fb4cfc015e886cf85e70d563fe50dd94a34b14fa73f539bbb0745ce1eeb6fe3518b7740bfbc39eaf41cb213504f19a8895108e06
+  languageName: node
+  linkType: hard
+
 "@redis/search@npm:5.8.3":
   version: 5.8.3
   resolution: "@redis/search@npm:5.8.3"
@@ -1301,12 +1328,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/search@npm:5.9.0":
+  version: 5.9.0
+  resolution: "@redis/search@npm:5.9.0"
+  peerDependencies:
+    "@redis/client": ^5.9.0
+  checksum: 10c0/f6982d4d9431b93db30e79239d1dd434135c8abdb2a8633e765c6006bd26ac4f754504616d729d8e7ce332d592a1a51e56b972b3dba8a7174a8889dea393c4a9
+  languageName: node
+  linkType: hard
+
 "@redis/time-series@npm:5.8.3":
   version: 5.8.3
   resolution: "@redis/time-series@npm:5.8.3"
   peerDependencies:
     "@redis/client": ^5.8.3
   checksum: 10c0/4cd8f29efb4c81971cbbdf2dfaa9daf8ca1089ee93d4847a3bc2ed87ba101ecbf2795a33ea4742fd0e7ee206f202992f94a95947b3525f4c4df368028cd44239
+  languageName: node
+  linkType: hard
+
+"@redis/time-series@npm:5.9.0":
+  version: 5.9.0
+  resolution: "@redis/time-series@npm:5.9.0"
+  peerDependencies:
+    "@redis/client": ^5.9.0
+  checksum: 10c0/c9b78655483d294ee26951614572c4d32730739d214ba7378a78618ca0af7de9cff0794a093ada4c239fcb129cb62afaccb11ae9f3b4ca720a6bed5225927af0
   languageName: node
   linkType: hard
 
@@ -1338,7 +1383,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/event-queue@workspace:*, @repo/event-queue@workspace:packages/event-queue":
+"@repo/event-queue@workspace:*, @repo/event-queue@workspace:packages/event-queue, @repo/event-queue@workspaces:*":
   version: 0.0.0-use.local
   resolution: "@repo/event-queue@workspace:packages/event-queue"
   dependencies:
@@ -1361,7 +1406,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/typescript-config@npm:*, @repo/typescript-config@workspace:packages/typescript-config":
+"@repo/typescript-config@npm:*, @repo/typescript-config@workspace:*, @repo/typescript-config@workspace:packages/typescript-config":
   version: 0.0.0-use.local
   resolution: "@repo/typescript-config@workspace:packages/typescript-config"
   languageName: unknown
@@ -2014,10 +2059,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/events@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "@types/events@npm:3.0.3"
+  checksum: 10c0/3a56f8c51eb4ebc0d05dcadca0c6636c816acc10216ce36c976fad11e54a01f4bb979a07211355686015884753b37f17d74bfdc7aaf4ebb027c1e8a501c7b21d
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10c0/a996a745e6c5d60292f36731dd41341339d4eeed8180bb09226e5c8d23759067692b1d88e5d91d72ee83dfc00d3aca8e7bd43ea120516c17922cbcb7c3e252db
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:*":
+  version: 24.10.0
+  resolution: "@types/node@npm:24.10.0"
+  dependencies:
+    undici-types: "npm:~7.16.0"
+  checksum: 10c0/f82ed7194e16f5590ef7afdc20c6d09068c76d50278b485ede8f0c5749683536e3064ffa8def8db76915196afb3724b854aa5723c64d6571b890b14492943b46
   languageName: node
   linkType: hard
 
@@ -2045,6 +2106,15 @@ __metadata:
   dependencies:
     csstype: "npm:^3.0.2"
   checksum: 10c0/632fd20ee176e55801a61c5f854141b043571a3e363ef106b047b766a813a12735cbb37abb3d61d126346979f530f2ed269a60c8ef3cdee54e5e9fe4174e5dad
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
   languageName: node
   linkType: hard
 
@@ -2872,6 +2942,7 @@ __metadata:
     "@repo/db": "workspace:*"
     "@repo/event-queue": "workspace:*"
     "@repo/types": "workspace:*"
+    "@repo/typescript-config": "workspace:*"
     bullmq: "npm:^5.61.2"
     dotenv-flow: "npm:^4.1.0"
     stream: "npm:^0.0.3"
@@ -3222,6 +3293,13 @@ __metadata:
   version: 2.0.3
   resolution: "esutils@npm:2.0.3"
   checksum: 10c0/9a2fe69a41bfdade834ba7c42de4723c97ec776e40656919c62cbd13607c45e127a003f05f724a1ea55e5029a4cf2de444b13009f2af71271e42d93a637137c7
+  languageName: node
+  linkType: hard
+
+"events@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "events@npm:3.3.0"
+  checksum: 10c0/d6b6f2adbccbcda74ddbab52ed07db727ef52e31a61ed26db9feb7dc62af7fc8e060defa65e5f8af9449b86b52cc1a1f6a79f2eafcf4e62add2b7a1fa4a432f6
   languageName: node
   linkType: hard
 
@@ -4594,6 +4672,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oracle@workspace:services/oracle":
+  version: 0.0.0-use.local
+  resolution: "oracle@workspace:services/oracle"
+  dependencies:
+    "@repo/event-queue": "workspaces:*"
+    "@types/events": "npm:^3.0.3"
+    "@types/ws": "npm:^8.18.1"
+    events: "npm:^3.3.0"
+    ws: "npm:^8.18.3"
+  languageName: unknown
+  linkType: soft
+
 "own-keys@npm:^1.0.1":
   version: 1.0.1
   resolution: "own-keys@npm:1.0.1"
@@ -4891,6 +4981,19 @@ __metadata:
     "@redis/search": "npm:5.8.3"
     "@redis/time-series": "npm:5.8.3"
   checksum: 10c0/6e66390eb268406a3738f63bc744a31546d0ca087db0fc8c4fd6d958335c59ef71c6f45ff11fec290eab01088c7609abbc1e448610816049ea11dcd931e056e1
+  languageName: node
+  linkType: hard
+
+"redis@npm:^5.9.0":
+  version: 5.9.0
+  resolution: "redis@npm:5.9.0"
+  dependencies:
+    "@redis/bloom": "npm:5.9.0"
+    "@redis/client": "npm:5.9.0"
+    "@redis/json": "npm:5.9.0"
+    "@redis/search": "npm:5.9.0"
+    "@redis/time-series": "npm:5.9.0"
+  checksum: 10c0/5bbeb97b9c7a561e319db44f24e4a26826587fc7f0b82a793cf2a97e4521e387cd50ff80d8b2ab0f11c2ec3ee04462a1d8fbaf9a6e02560262d82b7044fc7ce8
   languageName: node
   linkType: hard
 
@@ -5719,6 +5822,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:~7.16.0":
+  version: 7.16.0
+  resolution: "undici-types@npm:7.16.0"
+  checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^4.0.0":
   version: 4.0.0
   resolution: "unique-filename@npm:4.0.0"
@@ -5893,6 +6003,33 @@ __metadata:
   checksum: 10c0/138ff58a41d2f877eae87e3282c0630fc2789012fc1af4d6bd626eeb9a2f9a65ca92005e6e69a75c7b85a68479fe7443c7dbe1eb8fbaa681a4491364b7c55c60
   languageName: node
   linkType: hard
+
+"ws@npm:^8.18.3":
+  version: 8.18.3
+  resolution: "ws@npm:8.18.3"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/eac918213de265ef7cb3d4ca348b891a51a520d839aa51cdb8ca93d4fa7ff9f6ccb339ccee89e4075324097f0a55157c89fa3f7147bde9d8d7e90335dc087b53
+  languageName: node
+  linkType: hard
+
+"wss@workspace:services/wss":
+  version: 0.0.0-use.local
+  resolution: "wss@workspace:services/wss"
+  dependencies:
+    "@repo/typescript-config": "workspace:*"
+    "@types/ws": "npm:^8.18.1"
+    dotenv-flow: "npm:^4.1.0"
+    redis: "npm:^5.9.0"
+    ws: "npm:^8.18.3"
+  languageName: unknown
+  linkType: soft
 
 "yallist@npm:^4.0.0":
   version: 4.0.0
