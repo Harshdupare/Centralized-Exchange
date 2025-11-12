@@ -6,13 +6,13 @@ onMarketDataUpdate(({top , index}) => {
         const ask = parseInt(top.a[0]);
         const bid = parseInt(top.b[0]);
 
-        const mark = medianOfThree(ask, bid , index);
-        const fundingRate = calculateFundingRate(mark , index);
+        const markPrice = medianOfThree(ask, bid , index);
+        const fundingRate = calculateFundingRate(markPrice , index);
 
-        RedisManager.getInstance().publishToChannel("markprice:update", mark);
+        RedisManager.getInstance().publishToChannel("markprice:update", markPrice);
         RedisManager.getInstance().publishToChannel("fundingrate:update", {
             fundingRate,
-            mark    
+            markPrice    
         })
     }catch(error){
         console.log("Failed to update market data ",error);

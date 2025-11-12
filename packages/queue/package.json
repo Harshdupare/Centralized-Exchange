@@ -5,5 +5,9 @@
   "license": "MIT",
   "exports": {
     ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "bullmq": "^5.63.0",
+    "dotenv-flow": "^4.1.0"
   }
 }

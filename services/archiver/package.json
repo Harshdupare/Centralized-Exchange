@@ -1,0 +1,13 @@
+{
+  "name": "archiver",
+  "packageManager": "yarn@4.10.3",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/db": "workspaces:*",
+    "@repo/event-queue": "workspaces:*",
+    "bullmq": "^5.63.0",
+    "dotenv-flow": "^4.1.0"
+  }
+}

@@ -1,7 +1,6 @@
 {
   "name": "wss",
   "packageManager": "yarn@4.10.3",
-  
   "scripts": {
     "dev": "tsc -b && node dist/index.js"
   },

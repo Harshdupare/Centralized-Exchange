@@ -1,0 +1,11 @@
+{
+  "name": "funding-schedular",
+  "packageManager": "yarn@4.10.3",
+  "scripts": {
+    "dev": "tsc- b && node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/event-queue": "workspace:*",
+    "cron": "^4.3.4"
+  }
+}
