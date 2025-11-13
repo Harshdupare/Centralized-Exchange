@@ -1,0 +1,19 @@
+{
+  "name": "server",
+  "packageManager": "yarn@4.10.3",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "dependencies": {
+    "@repo/db": "wrokespaces:*",
+    "@repo/queue": "workspaces:*",
+    "@types/express": "^5.0.5",
+    "cors": "^2.8.5",
+    "dotenv-flow": "^4.1.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2"
+  }
+}

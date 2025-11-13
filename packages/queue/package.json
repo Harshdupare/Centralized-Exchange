@@ -6,7 +6,12 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js"
+  },
   "dependencies": {
+    "@repo/engine": "workspaces:*",
     "bullmq": "^5.63.0",
     "dotenv-flow": "^4.1.0"
   }

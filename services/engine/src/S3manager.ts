@@ -1,20 +1,25 @@
 import {S3Client , PutObjectCommand , GetObjectCommand} from "@aws-sdk/client-s3";
 import { Readable } from "stream";
+import dotenvFlow from "dotenv-flow";
+import path from "path";
 
-// TODO : Setup s3 system
+dotenvFlow.config({
+    path : path.resolve(__dirname, "../../../")
+})
+
+
 const s3 = new S3Client({
-    region : "process.env.region",
-    endpoint : "process.env.region",
+    region : process.env.AWS_REGION,
     credentials : {
-        accessKeyId : "",
-        secretAccessKey : "",
+        accessKeyId : process.env.AWS_ACCESS_KEY!,
+        secretAccessKey : process.env.AWS_SECRET_ACCESS_KEY!,
     }
 })
 
 
 export const s3manager = {
     async uploadSnapshot(snapshot : object , key : string){
-        const bucket = "process.env.bucket_name";
+        const bucket = process.env.AWS_S3_BUCKET_NAME;
         const body = JSON.stringify(snapshot);
         const command = new PutObjectCommand({
             Bucket : bucket,
@@ -26,7 +31,7 @@ export const s3manager = {
     },
 
     async downloadSnapshot(key : string): Promise<any> {
-        const bucket = "bucket_name";
+        const bucket = process.env.AWS_S3_BUCKET_NAME;
         try{
             const command = new GetObjectCommand({
                 Bucket : bucket,
