@@ -27,7 +27,7 @@ export class OrderBook {
 
     private sortOrders(){
         this.asks.sort((a,b) => a.entryprice - b.entryprice);
-        this.bids.sort((a,b) => b.entryprice - a.entryprice);
+        this.bids.sort((a,b) => b.entryprice - a.entryprice); // sorting in reverse to get the best price
     }
 
     addOrder(order : Order){
@@ -60,8 +60,10 @@ export class OrderBook {
             if(this.asks[i]?.userId === order.userId){
                 continue;
             }
-            // check if listed price is greater than or equal to order entryprice and executedQty is less than order qty
-            if(this.asks[i]?.entryprice! >= order.entryprice && executedQty < order.quantity){
+
+            // check if listed price is greater than or equal to order entryprice 
+            // and executedQty is less than order qty
+            if(this.asks[i]?.entryprice! <= order.entryprice && executedQty < order.quantity){
                 // take min of listed qty and diff. of order qty and executed qty
                 // so that only remaining qty should be executed 
                 const trade = Math.min(this.asks[i]?.quantity! , order.quantity - executedQty);
@@ -86,6 +88,7 @@ export class OrderBook {
                 })
             }
         }
+
         // if order is filled and completely executed remove from the list
         this.asks = this.asks.filter((ask) => ask.filled < ask.quantity)
 
@@ -167,7 +170,7 @@ export class OrderBook {
         return entries.sort((a, b) => descending ? b[0] - a[0] : a[0] - b[0]);
     }
 
-    // get the orders that are currently sitting on the order book waiting to get executed
+    // get the orders that are currently sitting on the order book by the user
     getOpenOrders(userId : string){
         const bids = this.bids.filter((bid) => bid.userId === userId);
         const asks = this.asks.filter((ask) => ask.userId === userId);
@@ -188,7 +191,7 @@ export class OrderBook {
                     bestprice = this.asks[i]!.entryprice;
                     break;
                 }
-            }    
+            }
         }else{    
             for(let i = 0 ; i < this.bids.length ; i++){
                 fillQuantity += this.bids[i]!.quantity;
