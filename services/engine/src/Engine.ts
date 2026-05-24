@@ -19,7 +19,7 @@ export class Engine{
     public static instance : Engine | null; 
     private orderBook : OrderBook | null;
     private userPosition : Map<String, UserPosition> = new Map();
-    private userBalance :Map<String , UserBalance> = new Map();
+    private userBalance : Map<String , UserBalance> = new Map();
 
 
     private constructor(){
@@ -57,14 +57,14 @@ export class Engine{
 
             if(side === "UNINITIALIZED") continue;
 
-            if(fundingRate > 0){
+            if(fundingRate > 0){ // LONG Pays
                 if(side === "LONG"){
                     positions.margin -= Math.abs(fundingCharge);
                 }else{
                     positions.margin += Math.abs(fundingCharge);
                 }
-            }else{
-                if(side === "LONG"){
+            }else{ // SHORT Pays
+                if(side === "LONG"){ 
                     positions.margin += Math.abs(fundingCharge);
                 }else{
                     positions.margin -= Math.abs(fundingCharge);
@@ -236,7 +236,7 @@ export class Engine{
             const {executedQty , fills} = this.orderBook?.addOrder(order)!;
 
             this.updateuserPnl(fills, executedQty , order);
-            this.updateuserPosition(fills , executedQty, order);
+            this.updateUserPosition(fills , executedQty, order);
             this.publishUserBalance(order.userId);
             this.publishDepth();
             this.publishLastTrade(fills);
@@ -244,7 +244,7 @@ export class Engine{
             this.updateRedisDepth();
             this.updateRedisOrder({ ...order , filled : executedQty});
             this.updateRedisFills(fills , order);
-            this.updateUserPosition(fills , order);
+            this.updateRedisUserPosition(fills , order);
             console.log(executedQty, order);
         }catch(error){
             throw new Error("Failed to Create limit order");
@@ -438,195 +438,191 @@ export class Engine{
 
     }
 
-    updateuserPosition(
+    updateUserPosition(
         fills : Fill[],
-        executedQty : number,
-        order : Order
-    ){
-        const position = this.userPosition.get(order.side)!;
+		executedQty : number,
+		order : Order
+	){
+		let position = this.userPosition.get(order.userId);
 
-        switch(position.side){
-            case "LONG" :{
-                if(order.side === "LONG"){
-                    const oldNotional = position.entryprice * position.quantity;
-                    const newNotional = order.entryprice * executedQty;
-                    const totalQty = position.quantity + executedQty;
-                    
-                    position.quantity += executedQty;
+		switch(position.side){
+			case "LONG" : {
+				if(order.side === "LONG"){
+					const oldNotional = position.entryPrice * position.quantity;
+					const newNotional = order.entryPrice * executedQty;
+					const totalQty = position.quantity + executedQty;
+					
+					position.quantity += executedQty;
+					position.entryPrice = (oldNotional + newNotional)/totalQty;
 
-                    //weighted average entry price
-                    position.entryprice = (oldNotional + newNotional)/totalQty; 
+					const newMargin = (order.entryPrice * executedQty)/order.leverage;
+					position.margin += newMargin;
+				}else{
+					if(position.quantity < executedQty){
+						const remainingQty = executedQty - position.quantity;
+						position.side = "SHORT"
+						position.quantity = remainingQty
+						position.entryPrice = order.entryPrice
+						position.margin = (order.entryPrice * remainingQty) / order.leverage
+					}else if(position.quantity > executedQty){
+						const oldNotional = position.entryPrice * position.quantity;
+						const newNotional = order.entryPrice * executedQty;
+						const remainingQty = position.quantity - executedQty;
 
-                    const newMargin = (order.entryprice*executedQty)/order.leverage;
-                    position.margin = position.margin + newMargin;
-                }else {
+						position.quantity -= executedQty;
+						position.entryPrice = (oldNotional + newNotional) / remainingQty;
 
-                    if(position.quantity < executedQty){
+						const newMargin = (order.entryPrice * executedQty) / order.leverage;
+						position.margin -= newMargin; 
+					}else if (position.quantity === executedQty){
+						position.side = "UNINITIALIZED"
+						position.quantity = 0;
+						position.margin = 0
+						position.entryPrice = order.entryPrice
+					}
+				}
+				break;
+			}
+			case "SHORT" : {
+				if(order.side === "SHORT"){
+					const oldNotional = position.entryPrice * position.quantity;
+					const newNotional = order.entryPrice * executedQty;
+					const totalQty = position.quantity + executedQty;
 
-                        const remainingQty = executedQty - position.quantity;
-                        position.side = "SHORT";
-                        position.quantity =  remainingQty;
-                        position.entryprice = order.entryprice ;
-                        position.margin = (order.entryprice * remainingQty)/ order.leverage;
-                        
-                    }else if(position.quantity > executedQty){
-                        const oldNotional = position.entryprice * position.quantity;
-                        const newNotional = order.entryprice * executedQty;
-                        const totalQty = position.quantity + executedQty;
+					position.quantity += totalQty;
+					position.entryPrice = (oldNotional + newNotional)/totalQty;
 
-                        position.quantity -= executedQty;
-                        position.entryprice = (oldNotional - newNotional)/ totalQty;
+					const newMargin = (order.entryPrice * executedQty)/order.leverage;
+					position.margin += newMargin;
+				}else {
+					if(position.quantity > executedQty){
+						const remainingQty = position.quantity - executedQty;
+						position.side = "LONG";
+						position.quantity = remainingQty;
+						position.entryPrice = order.entryPrice;
+						position.margin = (order.entryPrice * executedQty)/order.leverage
+					}else if(position.quantity < executedQty){
+						const oldNotional = position.entryPrice * position.quantity;
+						const newNotional = order.entryPrice * executedQty;
+						const remainingQty = executedQty - position.quantity;
 
-                        const newMargin = (order.entryprice * executedQty)/order.leverage;
-                        position.margin = position.margin - newMargin;
+						position.quantity -= executedQty;
+						position.entryPrice = (oldNotional + newNotional)/remainingQty;
 
-                    }else if(position.quantity === executedQty){
-                        position.side = "UNINITIALIZED";
-                        position.quantity = 0;
-                        position.entryprice = 0;
-                        position.margin = 0;
-                    }
+						const newMargin = (order.entryPrice * executedQty)/order.leverage;
+						position.margin -= newMargin;
+					}else if(position.quantity === executedQty){
+						position.side = "UNINITIALIZED";
+						position.entryPrice = 0;
+						position.quantity = 0;
+						position.margin = 0;
+					}
 
-                }
-                break;
-            }
+				}
+				break;
+			}
+			default : {
+				if(position && executedQty){
+					position.quantity += executedQty;
+					position.entryPrice = order.entryPrice;
+					position.side = order.side;
+					position.margin = (order.entryPrice * order.quantity)/order.leverage;
+				}
+				break;
+			}
+		}
 
-            case "SHORT" : {
-                if(order.side === "SHORT"){
-                    const oldNotional = position.entryprice * position.quantity;
-                    const newNotional = order.entryprice * executedQty;
-                    const totalQty = position.quantity + executedQty;
+		fills.forEach(fill => {
+			const position = this.userPosition.get(fill.otherUserId);
 
-                    position.quantity += executedQty;
-                    position.entryprice = (oldNotional + newNotional)/ totalQty;
+			switch(position.side){
+				case "LONG" : {
+					if(fill.side === "LONG"){
+						const oldNotional = position.entryPrice * position.quantity;
+						const newNotional = fill.entryPrice * fill.quantity;
+						const totalQty = position.quantity + fill.quantity;
 
-                    const newMargin = (order.entryprice * executedQty)/order.leverage;
-                    position.margin = position.margin + newMargin;
-                }else{
+						position.quantity += fill.quantity;
+						position.entryPrice = (oldNotional + newNotional)/totalQty;
 
-                    if(position.quantity < executedQty){
+						const newMargin = (fill.entryPrice * fill.quantity)/order.leverage;
+						position.margin += newMargin;
+					}else{
+						if(position.quantity > fill.quantity){
+							const remainingQty = position.quantity - fill.quantity;
+							position.side = "SHORT";
+							position.quantity = remainingQty;
+							position.entryPrice = fill.entryPrice;
+							position.margin = (fill.entryPrice * fill.quantity)/order.leverage;
+						}else if(position.quantity < fill.quantity){
+							const oldNotional = position.entryPrice * position.quantity;
+							const newNotional = fill.entryPrice * fill.quantity;
+							const remainingQty = position.quantity + fill.quantity;
 
-                        const reaminingQty = executedQty -position.quantity;
-                        position.side = "LONG";
-                        position.quantity = reaminingQty;
-                        position.entryprice = order.entryprice;
-                        position.margin = (order.entryprice*reaminingQty)/order.leverage
+							position.quantity -= fill.quantity;
+							position.entryPrice = (oldNotional + newNotional)/remainingQty;
+							
+							const newMargin = (fill.entryPrice * fill.quantity)/order.leverage;
+							position.margin -= newMargin;
+						}else if(position.quantity === fill.quantity){
+							position.side = "UNINITIALIZED";
+							position.quantity = 0;
+							position.entryPrice = 0;
+							position.margin = 0;
+						}
+					}
+					break;
+				}
+				case "SHORT" : {
+					if(fill.side === "SHORT"){
+						const oldNotional = position.entryPrice * position.quantity;
+						const newNotional = fill.entryPrice * fill.quantity;
+						const totalPnl = position.quantity + fill.quantity;
 
-                    }else if(position.quantity > executedQty){
+						position.quantity += fill.quantity;
+						position.entryPrice = (oldNotional + newNotional)/totalPnl;
 
-                        const oldNotional = position.entryprice * position.quantity;
-                        const newNotional = order.entryprice * executedQty;
-                        const totalQty = position.quantity + executedQty;
+						const newMargin = (fill.entryPrice * fill.quantity)/order.leverage;
+						position.margin += newMargin;
+					}else{
+						if(position.quantity > fill.quantity){
+							const remainingQty = position.quantity - fill.quantity;
+							position.side = "LONG";
+							position.quantity = remainingQty;
+							position.entryPrice = fill.entryPrice;
+							position.margin = (fill.entryPrice * fill.quantity)/order.leverage;
+						}else if(position.quantity < fill.quantity){
+							const oldNotional = position.entryPrice * position.quantity;
+							const newNotional = fill.entryPrice * fill.quantity;
+							const remainingQty = fill.quantity - position.quantity;
 
-                        position.quantity -= executedQty;
-                        position.entryprice = (oldNotional - newNotional)/totalQty;
-                        
-                        const newMargin = (order.entryprice * executedQty)/ order.leverage;
-                        position.margin == position.margin - newMargin;
-                        
-                    }else if(position.quantity === executedQty){
+							position.quantity -= fill.quantity;
+							position.entryPrice = (oldNotional + newNotional)/remainingQty;
+							
+							const newMargin = (fill.entryPrice * fill.quantity)/order.leverage;
+							position.margin -= newMargin;
+						}else if(position.quantity === fill.quantity) {
+							position.side = "UNINITIALIZED";
+							position.quantity = 0;
+							position.entryPrice = 0;
+							position.margin = 0;
+						}
+					}
+					break;
+				}
+				default : {
+					if(position && fill.quantity){
+						position.side = fill.side;
+						position.quantity += fill.quantity;
+						position.entryPrice = fill.entryPrice;
+						position.margin = (fill.entryPrice * fill.quantity)/order.leverage;
+					}
+					break;
+				}
+			}
+		})
 
-                        position.side = "UNINITIALIZED";
-                        position.quantity = 0;
-                        position.entryprice = 0;
-                        position.margin = 0;
-
-                    }
-                }
-                break;
-            }
-            default : {
-                if(position && executedQty){
-                    position.side = order.side;
-                    position.quantity += executedQty;
-                    position.entryprice = order.entryprice
-                    position.margin = (order.entryprice * executedQty)/order.leverage;
-                }
-                break;
-            }
-        }
-
-
-        fills.forEach((fill) => {
-            const position = this.userPosition.get(fill.otherUserId)!;
-
-            switch(position.side){
-                case "LONG": {
-                    if(order.side === "SHORT"){
-                        const oldNotional = position.entryprice * position.quantity;
-                        const newNotional = fill.price * fill.quantity;
-                        const totalQty = position.quantity + fill.quantity;
-
-                        position.quantity += fill.quantity;
-                        position.entryprice = (oldNotional + newNotional) / totalQty;
-
-                        const newMargin = (fill.price * fill.quantity)/order.leverage;
-                        position.margin = position.margin + newMargin;
-                    }else{
-                        if(position.quantity > fill.quantity){
-                            const oldNotional = position.entryprice * position.quantity;
-                            const newNotional = fill.price * fill.quantity;
-                            const totalQty = position.quantity + fill.quantity;
-
-                            position.quantity -= fill.quantity;
-                            position.entryprice = (oldNotional - newNotional)/totalQty;
-
-                            const newMargin = (fill.price * fill.quantity)/order.leverage;
-                            position.margin = position.margin - newMargin;
-
-                        }else if(position.quantity === fill.quantity){
-                            position.side = "UNINITIALIZED";
-                            position.quantity = 0;
-                            position.entryprice = 0;
-                            position.margin = 0;
-                        }
-
-                    }
-                    break;
-                }
-                case "SHORT" : {
-                    if(order.side === "LONG"){
-                        const oldNotional = position.entryprice * position.quantity;
-                        const newNotional = fill.price * fill.quantity;
-                        const totalQty = position.quantity + fill.quantity;
-
-                        position.quantity += fill.quantity;
-                        position.entryprice = (oldNotional + newNotional) / totalQty;
-
-                        const newMargin = (fill.price * fill.quantity)/order.leverage;
-                        position.margin = position.margin + newMargin;
-                    }else{
-                        if(position.quantity > fill.quantity){
-                            const oldNotional = position.entryprice * position.quantity;
-                            const newNotional = fill.price * fill.quantity;
-                            const totalQty = position.quantity + fill.quantity;
-
-                            position.quantity -= fill.quantity;
-                            position.entryprice = (oldNotional - newNotional)/totalQty;
-
-                            const newMargin = (fill.price * fill.quantity)/order.leverage;
-                            position.margin = position.margin - newMargin;
-
-                        }else if(position.quantity === fill.quantity){
-                            position.side = "UNINITIALIZED";
-                            position.quantity = 0;
-                            position.entryprice = 0;
-                            position.margin = 0;
-                        }
-
-                    }
-                    break;
-                }
-                default : {
-                    position.side = order.side === "LONG" ? "SHORT" : "LONG";
-                    position.quantity = fill.quantity;
-                    position.entryprice = fill.price;
-                    position.margin = (fill.price * fill.quantity)/order.leverage;
-                    break;
-                }
-            }
-        })
-    }
+	}
 
     publishUserBalance(userId : string){
         const balance = this.userBalance.get(userId)!;
@@ -701,7 +697,7 @@ export class Engine{
         })
     }
 
-    updateUserPosition(fills : Fill[], order : Order){
+    updateRedisUserPosition(fills : Fill[], order : Order){
         const position = this.userPosition.get(order.userId);
         eventQueue.add("update_position", {
             type : "POSITION_UPDATE",
