@@ -3,10 +3,12 @@
   "packageManager": "yarn@4.10.3",
   "type": "module",
   "scripts": {
-    "dev": "tsc -b && node dist/index.js"
+    "build": "tsc -b",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "@repo/event-queue": "workspaces:*",
+    "@repo/event-queue": "workspace:*",
     "@types/events": "^3.0.3",
     "events": "^3.3.0",
     "ws": "^8.18.3"

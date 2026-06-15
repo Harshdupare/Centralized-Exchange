@@ -1,12 +1,12 @@
 import {S3Client , PutObjectCommand , GetObjectCommand} from "@aws-sdk/client-s3";
 import { Readable } from "stream";
-import dotenvFlow from "dotenv-flow";
+import dotenv from "dotenv";
 import path from "path";
+const directoryPath = import.meta.dirname;
 
-dotenvFlow.config({
-    path : path.resolve(__dirname, "../../../")
-})
-
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+}) 
 
 const s3 = new S3Client({
     region : process.env.AWS_REGION,

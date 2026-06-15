@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String     @id @default(cuid())
+  phoneNumber String
+  balance     Float
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime?  @updatedAt
+  orders      Order[]
+  trades      Trade[]
+  positions   Position[]
+  OTPs        OTP[]
+}
+
+model Order {
+  id          String      @id
+  entryPrice  Int
+  qauntity    Float
+  leverage    Int
+  executedQty Float?
+  userId      String
+  createdAt   DateTime    @default(now())
+  user        User        @relation(references: [id], fields: [userId])
+  status      OrderStatus @default(PENDING)
+  trades      Trade[]
+  side        TradeSide
+}
+
+model Position {
+  id         String    @default(cuid())
+  userId     String    @id @unique
+  side       TradeSide
+  entryPrice Int
+  qauntity   Float
+  margin     Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(references: [id], fields: [userId])
+}
+
+model Trade {
+  id       String    @id @default(cuid())
+  userId   String
+  orderId  String
+  quantity Float
+  price    Int
+  side     TradeSide
+  user     User      @relation(references: [id], fields: [userId])
+  order    Order     @relation(references: [id], fields: [orderId])
+}
+
+model OTP {
+  id          String   @id @default(cuid())
+  code        String
+  phoneNumber String
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  userId      String
+  user        User     @relation(references: [id], fields: [userId])
+}
+
+model Depth {
+  id        String   @id @default("BTCUSDT")
+  bids      Json
+  asks      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TradeSide {
+  LONG
+  SHORT
+  UNINTIALIZED
+}
+
+enum OrderStatus {
+  FILLED
+  PENDING
+  PARTIALLY_FILLED
+  CANCELLED
+}

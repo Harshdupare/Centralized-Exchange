@@ -1,9 +1,11 @@
 import { defineConfig, env } from "prisma/config";
-import dotenvFlow from "dotenv-flow"; 
+import dotenv from "dotenv"; 
 import path from "path";
 
-dotenvFlow.config({
-  path : path.resolve(__dirname, "../../")
+const directoryPath = import.meta.dirname;
+
+dotenv.config({
+  path : path.resolve(directoryPath, "../../.env")
 })
 
 export default defineConfig({
@@ -11,7 +13,6 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  engine: "classic",
   datasource: {
     url: env("DATABASE_URL"),
   },

@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Depth" ALTER COLUMN "id" SET DEFAULT 'BTCUSDT';

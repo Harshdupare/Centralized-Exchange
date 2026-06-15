@@ -32,7 +32,7 @@ export interface UserPosition {
     margin              : number,  // capital used in trade
     unrealizedpnl       : number,
     liquidationPrice    : number,
-    leverage?            : number
+    leverage?           : number
 }
 
 export interface UserBalance {
@@ -48,5 +48,5 @@ export interface Fill {
     otherUserId     : String,
     price           : number,
     quantity        : number,
-    side?            : orderSide
+    side?           : orderSide
 }

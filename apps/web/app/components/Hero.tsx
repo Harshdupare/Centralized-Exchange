@@ -92,13 +92,6 @@ const Hero = () => {
                     </div>
                 </div>
             </div>
-
-            <div className="flex flex-col itmes-center justify-between relative">
-              <div className="flex">1</div>
-              <div className="flex">2</div>
-              <div>3</div>
-            </div>
-
         </div>
     );
 }

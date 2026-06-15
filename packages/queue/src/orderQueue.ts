@@ -1,11 +1,13 @@
 import { Queue } from "bullmq";
 import { Order } from "@repo/types";
-import dotenvFlow from "dotenv-flow";
+import dotenv from "dotenv";
 import path from "path";
+const directoryPath = import.meta.dirname;
 
-dotenvFlow.config({
-    path : path.resolve(__dirname , "../../../")
-})
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+}) 
+
 
 if(!process.env.REDIS_PORT || !process.env.REDIS_HOST || !process.env.REDIS_PASSWORD){
     throw new Error("Environment variable is missing or invalid");

@@ -1,6 +1,7 @@
 import React from "react";
 import BinanceHeader from "./components/Header";
 import Hero from "./components/Hero";
+import PriceTicker from "./components/PriceTicker";
 
 
 const page = () =>{
@@ -9,10 +10,10 @@ const page = () =>{
         <BinanceHeader/>
         <main className="grow">
             <Hero/>
-            ticker
+            <PriceTicker/>
         </main>
         
-        <footer>footer</footer>
+        <footer>todo : footer</footer>
 
     </div>
   );

@@ -1,16 +1,16 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { createClient } from "redis";
-import dotenvFlow from 'dotenv-flow';
+import dotenv from 'dotenv';
 import path from 'path';
+const directoryPath = import.meta.dirname;
 
-
-dotenvFlow.config({
-    path : path.resolve(__dirname , "../../../")
-})
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+}) 
 
 
 async function startWss(){
-    if(!process.env.REDIS_URL || !process.env.WSS_PORT){
+    if(!process.env.REDIS_HOST || !process.env.WSS_PORT){
         throw new Error("env variable are invalid or missing");
     }
 
@@ -25,6 +25,7 @@ async function startWss(){
         const redisSub = createClient({
             url : redisUrl
         });
+        
         redisSub.on("error", error => console.log(error));
         await redisSub.connect();
 

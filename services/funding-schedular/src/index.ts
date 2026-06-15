@@ -5,13 +5,13 @@ import { CronJob } from "cron";
 let latestMarkPrice : number | null = null;
 let latestFundingRate : number | null = null;
 
-SubcriptionManager.getInstance().subcribeToChannel("fundingrate:update", ({fundingRate, markPrice}) => {
+SubcriptionManager.getInstance().subscribeToChannel("fundingrate:update", ({fundingRate, markPrice} : {fundingRate : number , markPrice : number}) => {
     latestFundingRate = fundingRate;
     latestMarkPrice = markPrice;
 }) 
 
 const cron = new CronJob(
-    '0 0,8,16, * * *' ,
+    '0 0,8,16 * * *' ,
     () => {
         console.log("cron job is running");
         fundingQueue.add("fundingrate:update", {

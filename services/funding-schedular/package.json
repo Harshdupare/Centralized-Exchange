@@ -2,7 +2,9 @@
   "name": "funding-schedular",
   "packageManager": "yarn@4.10.3",
   "scripts": {
-    "dev": "tsc- b && node dist/index.js"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@repo/event-queue": "workspace:*",

@@ -1,35 +1,26 @@
 import { Queue } from "bullmq";
+import dotenv from "dotenv";
 import path from "path";
-import dotenvFlow from "dotenv-flow";
+const directoryPath = import.meta.dirname;
 
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+}) 
 
-dotenvFlow.config({
-    path : path.resolve(__dirname, "../../../")
-});
+const connection = {
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
+  password: process.env.REDIS_PASSWORD,
+};
 
-
-export const eventQueue = new Queue('EVENT-QUEUE',{
-    connection : {
-        host : process.env.REDIS_HOST,
-        port : Number(process.env.REDIS_PORT),
-        password : process.env.REDIS_PASSWORD
-    }
+export const eventQueue = new Queue("EVENT-QUEUE" , {
+    connection : connection
 })
 
-export const liquidationQueue = new Queue('LIQUIDATION-QUEUE', {
-    connection : {
-        host : process.env.REDIS_HOST,
-        port : Number(process.env.REDIS_PORT),
-        password : process.env.REDIS_PASSWORD
-    }
+export const fundingQueue = new Queue("FUNDING-QUEUE",{
+    connection : connection
 })
 
-export const fundingQueue = new Queue('FUNDING-QUEUE',{
-    connection : {
-        host : process.env.REDIS_HOST,
-        port : Number(process.env.REDIS_PORT),
-        password : process.env.REDIS_PASSWORD
-    }  
+export const liquidationQueue = new Queue("LIQUIDATION-QUEUE", {
+    connection : connection
 })
-
-

@@ -1,13 +1,18 @@
-import { Worker } from "bullmq";
-import { client } from "@repo/db";
-import dotenvFlow from "dotenv-flow";
+import dotenv from "dotenv";
 import path from "path";
 
+const directoryPath = import.meta.dirname;
 
-dotenvFlow.config({
-    path : path.resolve(__dirname , "../../../")
-});
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+}); 
+console.log("db url ------> ", process.env.DATABASE_URL);
 
+import { Worker } from "bullmq";
+import  client  from "@repo/db/client";
+
+
+    
 (async() =>{
     if(!process.env.REDIS_PORT || !process.env.REDIS_HOST || !process.env.REDIS_PASSWORD){
         throw new Error("Environment variable is invalid or missing");

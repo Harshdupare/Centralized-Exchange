@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { addToQueue }from "@repo/queue";
-import { client } from "@repo/db";
+import  client  from "@repo/db/client";
 
 const orderRouter = Router();
 

@@ -8,10 +8,13 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "tsc -b && node dist/index.js"
+    "build": "tsc -b",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "@repo/engine": "workspaces:*",
+    "@repo/engine": "workspace:*",
+    "@repo/types": "workspace:*",
     "bullmq": "^5.63.0",
     "dotenv-flow": "^4.1.0"
   }

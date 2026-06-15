@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { client } from "@repo/db";
+import  client   from "@repo/db/client";
 
 const positionRouter = Router();
 

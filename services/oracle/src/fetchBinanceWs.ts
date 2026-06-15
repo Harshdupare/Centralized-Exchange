@@ -1,31 +1,46 @@
-import { RedisManager } from "@repo/event-queue";
 import { WebSocket } from "ws";
+import dotenv from "dotenv"
+import path from "path";
+import { RedisManager } from "@repo/event-queue";
 import { emitIndexPrice } from "./marketDataBus.js";
+const directoryPath = import.meta.dirname;
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
+})
 
-const STREAM = 'btcusdt@markPrice';
 
-export function startOracle(){
-    const wss = new WebSocket(`wss://fstream.binance.com/ws/${STREAM}`);
+export const startOracle = () => {
+    console.log(process.env.MARKET_STREAM_BASE_URL , process.env.MARKET)
+    const ws  = new WebSocket(`${process.env.MARKET_STREAM_BASE_URL}/${process.env.MARKET}`);
 
-    wss.on("open", () => {
-        console.log("Connected to Binance")
+
+    ws.on("open" , ()=>{
+        console.log("Welcome to Binance : " , process.env.MARKET);
     })
 
-    wss.on("message", (raw) =>{
+
+    ws.on("message" , (raw)=>{
         const data = JSON.parse(raw.toString());
-        const indexPrice = parseFloat(data.i);
-        const fundingRate = parseFloat(data.r);
-        const markPrice = parseFloat(data.p);
-        const nextfundingTime = data.T;
+        const indexPrice = data.i;
+        const fundingRate = data.r;
+        const markPrice = data.p;
+        const nextFundingTime = data.T;
 
-
-        const payload = JSON.stringify({s:'btcusdt', i : indexPrice , r : fundingRate, m : markPrice , T : nextfundingTime});
-        RedisManager.getInstance().publishToChannel("prices:update", payload);
+        const payload = JSON.stringify({
+            s : "btcusdt",
+            i : indexPrice,
+            r : fundingRate,
+            p : markPrice,
+            T : nextFundingTime 
+        })
+        RedisManager.getInstance().publishToChannel("price:update" , payload)
         emitIndexPrice(indexPrice);
+
     })
 
-    wss.on('error', (error) =>{
-        console.log("Failed to connect Binance ws server : " , error);
+    ws.on("error" , (error)=>{
+        console.error(error);
     })
-
 }
+
+

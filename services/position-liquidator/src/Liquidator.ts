@@ -11,12 +11,12 @@ export class Liquidator{
     constructor(){
         const subscribe = SubcriptionManager.getInstance();
 
-        subscribe.subcribeToChannel("markprice:update", ({markPrice})=>{
+        subscribe.subscribeToChannel("markprice:update", ({markPrice} : {markPrice : number})=>{
             this.latestMarkPrice = markPrice;
             this.checkAllPositions();
         })
 
-        subscribe.subcribeToChannel("position:update", ({positions})=>{
+        subscribe.subscribeToChannel("position:update", ({positions} : {positions : any})=>{
             this.UserPosition.clear();
             for(const [userId, position] of positions){
                 this.UserPosition.set(userId , position);

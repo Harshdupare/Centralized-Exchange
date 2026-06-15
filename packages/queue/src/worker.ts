@@ -1,10 +1,11 @@
 import { Worker } from "bullmq";
 import { Engine } from "@repo/engine";
-import dotenvFlow from "dotenv-flow";
+import dotenv from "dotenv";
 import path from "path";
+const directoryPath = import.meta.dirname;
 
-dotenvFlow.config({
-    path : path.resolve(__dirname, "../../../")
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
 });
 
 (async() =>{

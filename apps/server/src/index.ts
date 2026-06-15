@@ -1,14 +1,15 @@
 import express from "express";
 import cors from "cors";
-import dotenvFlow from "dotenv-flow";
+import dotenv from "dotenv";
 import path from "path";
 import orderRouter from "./Routes/orderRouter.js";
 import depthRouter from "./Routes/depthRouter.js";
 import positionRouter from "./Routes/positionRouter.js";
 import balanceRouter from "./Routes/balanceRouter.js";
 
-dotenvFlow.config({
-    path : path.resolve(__dirname , "../../../")
+const directoryPath = import.meta.dirname;
+dotenv.config({
+    path : path.resolve(directoryPath , "../../../.env")
 })
 
 const app = express();

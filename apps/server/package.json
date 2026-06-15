@@ -3,11 +3,13 @@
   "packageManager": "yarn@4.10.3",
   "type": "module",
   "scripts": {
-    "dev": "tsc -b && node dist/index.js"
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "build": "tsc -b"
   },
   "dependencies": {
-    "@repo/db": "wrokespaces:*",
-    "@repo/queue": "workspaces:*",
+    "@repo/db": "workspace:*",
+    "@repo/queue": "workspace:*",
     "@types/express": "^5.0.5",
     "cors": "^2.8.5",
     "dotenv-flow": "^4.1.0",
