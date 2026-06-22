@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import prisma from "@repo/db";
 
 
-export async funtion POST(req : Request){
-  const { phoneNumber, code } = await req.json();
+export async function POST(req: Request) {
+  const { phoneNumber, code }: { phoneNumber: string, code: string } = await req.json();
 
   if (!phoneNumber || !code) {
     return NextResponse.json({ error: "phoneNumber or code is missing" }, { status: 404 });
   }
 
   const otp = await prisma.oTP.findFirst({
-    data: {
+    where: {
       phoneNumber,
       code,
       isVerified: false,
@@ -28,8 +28,8 @@ export async funtion POST(req : Request){
     data: { isVerified: true }
   })
 
-  const user = await prisma.user.findUnique({
-    data: { phoneNumber }
+  let user = await prisma.user.findUnique({
+    where: { phoneNumber }
   });
 
   if (!user) {
@@ -41,6 +41,6 @@ export async funtion POST(req : Request){
     });
   }
 
-  return NextResponse.json({ success: true }, { userId: user.id });
+  return NextResponse.json({ success: true, userId: user.id });
 
 }

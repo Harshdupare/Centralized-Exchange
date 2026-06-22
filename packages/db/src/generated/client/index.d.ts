@@ -8444,10 +8444,10 @@ export namespace Prisma {
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    phoneNumber?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    phoneNumber?: StringFilter<"User"> | string
     balance?: FloatFilter<"User"> | number
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
@@ -8455,7 +8455,7 @@ export namespace Prisma {
     trades?: TradeListRelationFilter
     positions?: PositionListRelationFilter
     OTPs?: OTPListRelationFilter
-  }, "id">
+  }, "id" | "phoneNumber">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder

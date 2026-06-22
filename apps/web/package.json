@@ -14,6 +14,7 @@
     "@repo/ui": "*",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/twilio": "^3.19.3",
+    "lucide-react": "^1.21.0",
     "motion": "^12.40.0",
     "next": "^15.5.0",
     "next-auth": "^4.24.13",

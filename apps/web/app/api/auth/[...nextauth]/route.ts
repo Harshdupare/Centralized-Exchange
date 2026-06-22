@@ -1,29 +1,7 @@
 import NextAuth from "next-auth";
-import { CredentialsProvider } from "next-auth/providers/credentials";
+import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@repo/db";
 
-declare module "next-auth" {
-  interface User {
-    id: string,
-    phoneNumber: string,
-    balance: number
-  }
-
-  interface Session {
-    id: string,
-    phoneNumber: string,
-    balance: number
-  }
-
-};
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string,
-    phoneNumber: string,
-    balance: number
-  }
-}
 
 const handler = NextAuth({
   providers: [
@@ -103,10 +81,11 @@ const handler = NextAuth({
       }
 
       return session;
-    },
+    }
+  },
 
-    secret: process.env.NEXTAUTH_SECRET
-  }
+  secret: process.env.NEXTAUTH_SECRET
+
 
 });
 
