@@ -4,19 +4,51 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, ArrowRight, Lock } from "lucide-react";
+import {
+  RecaptchaVerifier,
+  ConfirmationResult,
+} from "firebase/auth";
+import {auth} from "../lib/firebase";
+
+// declare global {
+//   interface Window {
+//     recaptchaVerifier: RecaptchaVerifier;
+//     confirmationResult: ConfirmationResult;
+//   }
+// }
 
 const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState(['', '', '', '', '']);
   const [showOtp, setShowOtp] = useState(false);
 
+   const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "normal",
+        }
+      );
+    }
+  };
+
   const handleSendOtp = async () => {
-    await fetch("/api/request-otp", {
+    setupRecaptcha();
+    const res = await fetch("/api/request-otp", {
       method: "POST",
       body: JSON.stringify({ phoneNumber: phoneNumber }),
       headers: { "Content-Type": "application/json" }
     });
-    setShowOtp(true);
+
+    const json = await res.json();
+
+    if (json.success) {
+      window.confirmationResult = json.result;
+      setShowOtp(true);
+    }
+
   }
 
   const handleChangeOtp = (index: number, value: string) => {
@@ -57,12 +89,16 @@ const Auth = () => {
 
   }
 
+ 
 
   return (
     <div className="">
+      <div
+        id="recaptcha-container"
+        style={{ marginTop: "20px" }}
+      />
       <div className="" />
       <div className="" />
-
       <motion.div>
 
         <div className="">
@@ -76,11 +112,13 @@ const Auth = () => {
 
 
       <AnimatePresence mode="wait">
-        {showOtp ? (
+        {!showOtp ? (
           <motion.div>
             <div className="">
               <Phone className="" />
               <input
+                type="tel"
+                value={phoneNumber}
                 className=""
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
@@ -107,6 +145,7 @@ const Auth = () => {
             <div className="">
               {otp.map((digit, index) => (
                 <input
+                  key={index}
                   id={`otp-${index}`}
                   value={digit}
                   onChange={(e) => handleChangeOtp(index, e.target.value)}

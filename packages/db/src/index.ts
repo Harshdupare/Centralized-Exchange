@@ -1,23 +1,24 @@
-import dotenv from "dotenv";
-import path from "path";
-
-const repoRoot = path.resolve(import.meta.dirname, "../../..");
-const envPath = path.resolve(repoRoot, ".env");
-dotenv.config({ path: envPath });
-import {PrismaPg} from "@prisma/adapter-pg"
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { PrismaClient } from "./generated/client/client.js";
 
-
-
-const prismaClientSingleton = () =>{
-    const adapter = new PrismaPg({connectionString : process.env.DATABASE_URL})
-    return new PrismaClient({ adapter });
+declare global {
+  var prismaGlobal: PrismaClient | undefined;
+  var prismaPoolGlobal: Pool | undefined;
 }
 
-declare global  {
-    var prismaGlobal : undefined | ReturnType<typeof prismaClientSingleton>
+function createClient() {
+  const pool =
+    globalThis.prismaPoolGlobal ??
+    new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
 }
 
-const client : ReturnType<typeof prismaClientSingleton> = globalThis.prismaGlobal ?? prismaClientSingleton();
+const client = globalThis.prismaGlobal ?? createClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prismaGlobal = client;
+}
 
 export default client;

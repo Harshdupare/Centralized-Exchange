@@ -1,5 +1,8 @@
 import NextAuth from "next-auth";
-
+import {
+  RecaptchaVerifier,
+  ConfirmationResult,
+} from "firebase/auth";
 
 declare module "next-auth" {
   interface Session {
@@ -27,3 +30,12 @@ declare module "next-auth/jwt" {
     balance: number
   }
 }
+
+
+declare global {
+  interface Window {
+    recaptchaVerifier: RecaptchaVerifier;
+    confirmationResult: ConfirmationResult;
+  }
+}
+
