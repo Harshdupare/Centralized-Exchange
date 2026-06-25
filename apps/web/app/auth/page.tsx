@@ -93,6 +93,10 @@ const Auth = () => {
       headers: { "Content-Type": "application/json" }
     })
 
+    if (!res.ok) {
+      console.log(await res.text());
+      return;
+    }
 
     const json = await res.json();
     if (json.success) {
@@ -100,7 +104,6 @@ const Auth = () => {
     } else {
       alert("OTP verification failed");
     }
-
   }
 
 
@@ -163,7 +166,7 @@ const Auth = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => signIn("credentails", { phoneNumber: "1234", callbackUrl: "/" })}
+                onClick={() => signIn("credentials", { phoneNumber: "1234", callbackUrl: "/" })}
                 className="w-full mt-4 bg-gray-800 border border-gray-700 text-gray-300 font-medium py-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-gray-700 transition-all duration-300"
               >
                 <span>Demo Button</span>
@@ -212,7 +215,7 @@ const Auth = () => {
                 className="mt-4 text-gray-400 hover:text-yellow-500 transition-colors"
                 onChange={() => setShowOtp(false)}
               >
-                change Phone Number
+                Change Phone Number
               </button>
             </motion.div>
           )

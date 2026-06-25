@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@repo/db";
 
+
 export async function POST(req: Request) {
   const { phoneNumber, code }: { phoneNumber: string, code: string } = await req.json();
 
@@ -9,26 +10,23 @@ export async function POST(req: Request) {
   }
 
 
-  let user = await prisma.user.findUnique({
-    where: { phoneNumber }
+  const user = await prisma.user.upsert({
+    where: {
+      phoneNumber
+    },
+    update: {},
+    create: {
+      phoneNumber,
+      balance: 0
+    }
   });
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        phoneNumber,
-        balance: 0
-      }
-    });
-  }
-
-  // const otp = await prisma.oTP.create({
-  //   data: {
-  //     phoneNumber,
-  //     code,
-  //     userId: user.id,
-  //     expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-  //   }
+  //const otp = await prisma.oTP.create({
+  //  data: {
+  //    phoneNumber,
+  //    code,
+  //    userId: user.id,
+  //    expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+  //  }
   // })
 
   // await prisma.oTP.update({

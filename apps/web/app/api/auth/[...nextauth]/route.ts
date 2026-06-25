@@ -14,7 +14,7 @@ const handler = NextAuth({
         let phone = credentials?.phoneNumber;
         if (!phone) return null;
 
-
+        /*
         let otp = await prisma.oTP.findFirst({
           where: {
             phoneNumber: phone,
@@ -25,7 +25,7 @@ const handler = NextAuth({
         });
 
         if (!otp) return null;
-
+        */
         // auth bypass for demo purpose
 
         if (phone == "0000") {
