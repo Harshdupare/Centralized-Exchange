@@ -2,7 +2,7 @@ import React from "react";
 
 import Header from "../components/Header";
 import MarketTabs from "../components/MarketTabs";
-
+import ChartSection from "../components/ChartSection";
 
 const Trade: React.FC = () => {
   return (
@@ -11,6 +11,9 @@ const Trade: React.FC = () => {
 
         <Header />
         <MarketTabs />
+        <div className="flex flex-1 overflow-hidden">
+          <ChartSection />
+        </div>
       </div>
     </div>
   );
