@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useRef, useState, useCallback } from "react";
+import { createContext, useEffect, useContext, useRef, useState, useCallback } from "react";
+
 
 type Handler = (data: any) => void;
 
@@ -13,7 +14,7 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
-const WebSocketContextProvider = ({ children }: { children: React.ReactNode }) => {
+export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const handlers = useRef(new Map<string, Set<Handler>>());
@@ -21,8 +22,8 @@ const WebSocketContextProvider = ({ children }: { children: React.ReactNode }) =
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
-    const url = process.env.NEXT_WSS_URL;
-
+    const url = process.env.NEXT_PUBLIC_WSS_URL;
+    console.log(url);
     if (!url || ws.current?.readyState == WebSocket.OPEN) return;
 
     ws.current = new WebSocket(url);
@@ -33,10 +34,7 @@ const WebSocketContextProvider = ({ children }: { children: React.ReactNode }) =
 
       subscriberStream.current.forEach((stream) => {
         ws.current?.send(
-          JSON.stringify({
-            method: "subscribe_orderbook",
-            events: [stream]
-          })
+          JSON.stringify({ method: "subscribe_orderbook", events: [stream] })
         );
       })
     };
@@ -62,6 +60,17 @@ const WebSocketContextProvider = ({ children }: { children: React.ReactNode }) =
 
   }, []);
 
+  useEffect(() => {
+    connect();
+
+    console.log("connected ws")
+    return () => {
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
+      ws.current?.close();
+    };
+  }, [connect]);
 
   const subscribe = useCallback((stream: string, handler: Handler) => {
     if (!handlers.current.get(stream)) {
@@ -107,12 +116,10 @@ const WebSocketContextProvider = ({ children }: { children: React.ReactNode }) =
   );
 }
 
-export default WebSocketContextProvider;
-
-export const useWebSocketContext = () => {
+export function useWebSocketContext() {
   const context = useContext(WebSocketContext);
   if (!context) {
-
+    throw new Error("useWebSocketContext must be used within WebSocketProvider");
   }
   return context;
 }

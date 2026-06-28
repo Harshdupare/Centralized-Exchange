@@ -166,7 +166,7 @@ const Auth = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => signIn("credentials", { phoneNumber: "1234", callbackUrl: "/" })}
+                onClick={() => signIn("credentials", { phoneNumber: "0000", callbackUrl: "/" })}
                 className="w-full mt-4 bg-gray-800 border border-gray-700 text-gray-300 font-medium py-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-gray-700 transition-all duration-300"
               >
                 <span>Demo Button</span>

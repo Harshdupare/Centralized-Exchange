@@ -5,67 +5,74 @@ import path from 'path';
 const directoryPath = import.meta.dirname;
 
 dotenv.config({
-    path : path.resolve(directoryPath , "../../../.env")
-}) 
+  path: path.resolve(directoryPath, "../../../.env")
+})
 
 
-async function startWss(){
-    if(!process.env.REDIS_HOST || !process.env.WSS_PORT){
-        throw new Error("env variable are invalid or missing");
-    }
+async function startWss() {
+  if (!process.env.REDIS_HOST || !process.env.WSS_PORT) {
+    throw new Error("env variable are invalid or missing");
+  }
 
-    const redisUrl = process.env.REDIS_URL;
-    const wssPort = parseInt(process.env.WSS_PORT);
+  const redisUrl = process.env.REDIS_URL;
+  const wssPort = parseInt(process.env.WSS_PORT);
 
-    const wss = new WebSocketServer({port : wssPort});
+  const wss = new WebSocketServer({ port: wssPort });
 
-    wss.on("connection", async(ws)=>{
-        console.log("Client Connected");
+  console.log(wssPort)
 
-        const redisSub = createClient({
-            url : redisUrl
-        });
-        
-        redisSub.on("error", error => console.log(error));
-        await redisSub.connect();
+  wss.on("connection", async (ws) => {
+    console.log("Client Connected");
 
-        ws.on("message", async (raw) => {
-            let msg : any;
-            try{
-                msg = JSON.parse(raw.toString());
-            }catch{
-                return;
+    const redisSub = createClient({
+      url: redisUrl
+    });
+
+    redisSub.on("error", error => console.log(error));
+    await redisSub.connect();
+
+    console.log("redisConnected")
+
+    ws.on("message", async (raw) => {
+      let msg: any;
+      try {
+        msg = JSON.parse(raw.toString());
+      } catch {
+        return;
+      }
+      console.log(msg)
+
+      if (msg.method === "subscribe_orderbook" && Array.isArray(msg.events)) {
+        for (const channel of msg.events) {
+
+          await redisSub.subscribe(channel, (message) => {
+
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                stream: channel,
+                data: JSON.parse(message)
+              }))
             }
+          })
+        }
+      }
 
-            if(msg.method === "subscribe_orderbook" && Array.isArray(msg.events)){
-                for(const channel of msg.events){
-                    await redisSub.subscribe(channel , (message)=>{
-                        if(ws.readyState === WebSocket.OPEN){
-                            ws.send(JSON.stringify({
-                                stream : channel ,
-                                data : JSON.parse(message)
-                            }))
-                        }
-                    })
-                }
-            }
-
-            if(msg.method === "unsubscribe_orderbook" && Array.isArray(msg.events)){
-                for(const channel of msg.events){
-                    await redisSub.unsubscribe(channel);
-                }
-            }
-        })
-
-        ws.on("close" , () => {
-            console.log("Client disconnect");
-            redisSub.destroy();
-        })
-
+      if (msg.method === "unsubscribe_orderbook" && Array.isArray(msg.events)) {
+        for (const channel of msg.events) {
+          await redisSub.unsubscribe(channel);
+        }
+      }
     })
+
+    ws.on("close", () => {
+      console.log("Client disconnect");
+      redisSub.destroy();
+    })
+
+  })
 }
 
-startWss().catch(err =>{ 
-    console.log(err);
-    process.exit(1);
+startWss().catch(err => {
+  console.log(err);
+  process.exit(1);
 })

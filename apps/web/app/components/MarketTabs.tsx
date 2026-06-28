@@ -12,14 +12,14 @@ const marketData = [
 
 const MarketTabs: React.FC = () => {
   return (
-    <div className="market-tabs flex items-center border-b border-[#2A2A2A] p-2 overflow-x-auto">
+    <div className="market-tabs  flex items-center border-b border-[#2A2A2A] p-2 overflow-hidden">
       <div className="flex space-x-4 min-w-full">
         {marketData.map((market, index) => (
           <div
             key={index}
             className={` flex items-center space-x-1 text-sm ${market.isPositive === true ? "text-[#0ECB81]" :
-                market.isPositive === false ? "text-[#F6465D]" :
-                  "text-white"
+              market.isPositive === false ? "text-[#F6465D]" :
+                "text-white"
               }`
             }
           >
@@ -28,10 +28,13 @@ const MarketTabs: React.FC = () => {
           </div>
         ))}
       </div>
-      <div className="flex items-center space-x-1 text-sm">
-        <span>...</span>
-      </div>
+      {/*
+        <div className="flex items-center space-x-1 text-sm">
+          <span>...</span>
+        </div> 
+        */}
     </div>
+
   );
 }
 

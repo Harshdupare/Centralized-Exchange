@@ -1,7 +1,8 @@
+"use client";
 
 import { useState, useEffect } from "react";
 
-type TimeLeft = { hours: number; minutes: number; second: number };
+type TimeLeft = { hours: number; minutes: number; seconds: number };
 
 function getNextCutOff(now: Date): Date {
   const year = now.getFullYear();
@@ -19,7 +20,7 @@ function getNextCutOff(now: Date): Date {
 }
 
 const useNextCutOffCountdown = (): TimeLeft => {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, second: 0 });
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const update = () => {
@@ -29,9 +30,9 @@ const useNextCutOffCountdown = (): TimeLeft => {
 
       const hours = Math.floor(diff / 3_600_000);
       const minutes = Math.floor((diff % 3_600_000) / 60_000);
-      const second = Math.floor((diff % 60_000) / 1000);
+      const seconds = Math.floor((diff % 60_000) / 1000);
 
-      setTimeLeft({ hours, minutes, second });
+      setTimeLeft({ hours, minutes, seconds });
     }
 
     update();
