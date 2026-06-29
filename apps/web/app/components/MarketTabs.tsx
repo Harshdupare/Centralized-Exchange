@@ -8,7 +8,7 @@ const marketData = [
   { symbol: 'LTCUSDT', change: '-8.67%', isPositive: false },
   { symbol: 'XRPUSDT', change: '+7.77%', isPositive: true },
   { symbol: 'EOSUSDT', change: '', isPositive: null }
-]
+];
 
 const MarketTabs: React.FC = () => {
   return (
@@ -28,11 +28,12 @@ const MarketTabs: React.FC = () => {
           </div>
         ))}
       </div>
+
       {/*
         <div className="flex items-center space-x-1 text-sm">
           <span>...</span>
         </div> 
-        */}
+      */}
     </div>
 
   );

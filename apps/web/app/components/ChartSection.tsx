@@ -4,10 +4,11 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useWebSocketContext } from "../context/WebSocketContext";
 import useNextCutOffCountdown from "../hooks/useNextCutOffCountdown";
+import LightweightCandlestickChart from "./TradingChartView";
 
 
 
-const timeFrames = ['15m', '1H', '4H', '1D', '1W'];
+const timeFrames = ['1s', '15m', '1h', '4h', '1d', '1w'];
 const viewTypes = ["Original", "Trading View", "Depth"];
 
 const ChartSection: React.FC = () => {
@@ -93,9 +94,64 @@ const ChartSection: React.FC = () => {
                 <div className="text-[#8A8A8A] mb-1">24h Low</div>
                 <div className="text-[#F6465D] font-medium text-sm">$84,914.4</div>
               </div>
+
             </div>
           </div>
         </div>
+
+        {/* market tabs */}
+
+        <div className="flex border-b border-[#2A2A2A] text-sm">
+          <button className="py-2 px-4 text-white border-b border-[#F0B90B]">
+            Chart
+          </button>
+        </div>
+
+
+        <div className="flex items-center justify-between border-b border-[#2A2A2A] p-2 text-sm">
+          <div className="flex items-center space-x-1">
+            {timeFrames.map((tf) => (
+              <button
+                key={tf}
+                className={`py-2 px-2 ${activeTimeframe === tf ? "border-b border-[#2A2A2A] bg-[#121212]" : ""}`}
+                onClick={() => setActiveTimeframe(tf)}
+              >
+                {tf}
+              </button>
+            ))}
+
+            <button className="flex items-center ml-2">
+              <span>Last Price</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {viewTypes.map((view) => (
+              <button
+                key={view}
+                className={`py-2 px-2 ${activeView === view ? "border-b border-[#2A2A2A] bg-[#121212]" : ""}`}
+                onClick={() => setActiveView(view)}
+              >
+                {view}
+              </button>
+            ))}
+
+            <button className="ml-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-hidden p-2" style={{ height: "500px" }}>
+        <LightweightCandlestickChart width="100%" height="100%" tf={activeTimeframe} />
       </div>
 
     </div>

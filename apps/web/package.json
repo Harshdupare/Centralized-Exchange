@@ -16,6 +16,7 @@
     "@tailwindcss/postcss": "^4.1.17",
     "@types/twilio": "^3.19.3",
     "firebase": "^12.15.0",
+    "lightweight-charts": "^5.2.0",
     "lucide-react": "^1.21.0",
     "motion": "^12.40.0",
     "next": "^15.5.0",
