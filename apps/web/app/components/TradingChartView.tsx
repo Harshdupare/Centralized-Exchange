@@ -56,27 +56,59 @@ export default function LightweightCandlestickChart({
         wickDownColor: '#ef5350'
       });
 
-      (async () => {
-        const realData = await fetch(
-          `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${tf}`
-        ).then(r => r.json());
+      const handleResize = () => {
+        chart.resize(container.clientWidth, container.clientHeight);
+      }
 
-        const chartData: any = realData.map((c: any) => ({
-          time: c[0] / 1000,
-          open: +c[1],
-          high: +c[2],
-          low: +c[3],
-          close: +c[4],
-        }));
 
-        candleSeries.setData(chartData)
-      })()
+        ; (async () => {
+          const realData = await fetch(
+            `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${tf}`
+          ).then(r => r.json())
+          // transform the array of arrays into { time, open, high, low, close }
+          const chartData = realData.map((c: any) => ({
+            time: c[0] / 1000,
+            open: +c[1],
+            high: +c[2],
+            low: +c[3],
+            close: +c[4],
+          }))
+          candleSeries.setData(chartData)
+        })()
 
+
+      const wsUrl = `wss://fstream.binance.com/market/ws/btcusdt_perpetual@continuousKline_${tf}`
+
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => { console.log("connected to kline stream") };
+
+
+      ws.onmessage = (raw) => {
+
+        const data = JSON.parse(raw.data).k;
+
+        const chartData: any = {
+          time: data.t / 1000,
+          open: Number(data.o),
+          high: Number(data.h),
+          low: Number(data.l),
+          close: Number(data.c)
+        };
+
+        candleSeries.update(chartData)
+
+
+        window.addEventListener("resize", handleResize);
+
+      };
+
+      /*
       const handleResize = () => {
         chart.resize(container.clientWidth, container.clientHeight);
       }
       window.addEventListener("resize", handleResize);
-
+      */
       return () => {
         window.removeEventListener("resize", handleResize);
         chart.remove();

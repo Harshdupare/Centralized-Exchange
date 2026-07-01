@@ -3,6 +3,7 @@ import React from "react";
 import Header from "../components/Header";
 import MarketTabs from "../components/MarketTabs";
 import ChartSection from "../components/ChartSection";
+import OrderBook from "../components/OrderBook";
 
 const Trade: React.FC = () => {
   return (
@@ -13,7 +14,16 @@ const Trade: React.FC = () => {
         <MarketTabs />
         <div className="flex flex-1 overflow-hidden">
           <ChartSection />
+
+          <div className="">
+            <div className="">
+              <div className="">
+                <OrderBook />
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   );
